@@ -10,7 +10,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :policies, only: [:index, :show, :create]
+      resources :policies, only: [:index, :show, :create] do
+        resources :endorsements, only: [:index, :show, :create]
+      end
     end
   end
 end
