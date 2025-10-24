@@ -7,25 +7,18 @@ module Api
       # GET /api/v1/policies/:policy_id/endorsements
       def index
         endorsements = @policy.endorsements.order(created_at: :desc)
-        render json: endorsements.as_json(
-          only: [:id, :issue_date, :endorsement_type, :new_sum_insured, :new_start_date, :new_end_date, :canceled_endorsement_id, :created_at]
-        )
+        render json: endorsements, each_serializer: EndorsementSerializer
       end
 
       # GET /api/v1/policies/:policy_id/endorsements/:id
       def show
-        render json: @endorsement.as_json(
-          only: [:id, :issue_date, :endorsement_type, :new_sum_insured, :new_start_date, :new_end_date, :canceled_endorsement_id, :created_at],
-          include: {
-            policy: { only: [:id, :number, :lmg, :status] }
-          }
-        )
+        render json: @endorsement, serializer: EndorsementSerializer, include_policy: true
       end
 
       # POST /api/v1/policies/:policy_id/endorsements
       def create
         endorsement = EndorsementCreator.new(@policy, endorsement_params.to_h).call
-        render json: endorsement, status: :created
+        render json: endorsement, serializer: EndorsementSerializer, status: :created
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       rescue StandardError => e

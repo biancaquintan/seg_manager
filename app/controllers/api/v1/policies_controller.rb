@@ -5,27 +5,20 @@ module Api
 
       # GET /api/v1/policies
       def index
-        policies = Policy.all.order(created_at: :desc)
-        render json: policies.as_json(only: [:id, :number, :issue_date, :start_date, :end_date, :sum_insured, :lmg, :status])
+        policies = Policy.includes(:endorsements).order(created_at: :desc)
+        render json: policies, each_serializer: PolicySerializer
       end
 
       # GET /api/v1/policies/:id
       def show
-        render json: @policy.as_json(
-          only: [:id, :number, :issue_date, :start_date, :end_date, :sum_insured, :lmg, :status],
-          include: {
-            endorsements: {
-              only: [:id, :issue_date, :endorsement_type, :new_sum_insured, :new_start_date, :new_end_date, :canceled_endorsement_id]
-            }
-          }
-        )
+        render json: @policy, serializer: PolicySerializer
       end
 
       # POST /api/v1/policies
       def create
         policy = Policy.new(policy_params)
         if policy.save
-          render json: policy, status: :created
+          render json: policy, serializer: PolicySerializer, status: :created
         else
           render json: { errors: policy.errors.full_messages }, status: :unprocessable_entity
         end
