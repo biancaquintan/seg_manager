@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class EndorsementsController < ApplicationController
@@ -6,8 +8,15 @@ module Api
 
       # GET /api/v1/policies/:policy_id/endorsements
       def index
-        endorsements = @policy.endorsements.order(created_at: :desc)
-        render json: endorsements, each_serializer: EndorsementSerializer
+        endorsements = @policy.endorsements
+                              .order(created_at: :desc)
+                              .page(params[:page])
+                              .per(params[:per_page] || 10)
+
+        render json: {
+          data: ActiveModelSerializers::SerializableResource.new(endorsements, each_serializer: EndorsementSerializer),
+          meta: pagination_meta(endorsements)
+        }
       end
 
       # GET /api/v1/policies/:policy_id/endorsements/:id

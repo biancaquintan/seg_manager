@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 class ApplicationController < ActionController::API
+  include PaginationHelper
+
   before_action :authorize_request
 
   private
