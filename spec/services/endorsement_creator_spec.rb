@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe EndorsementCreator, type: :service do
@@ -32,7 +34,7 @@ RSpec.describe EndorsementCreator, type: :service do
       it "cancels the associated policy" do
         previous_endorsement = create(:endorsement, policy: policy, new_sum_insured: 120_000)
 
-        cancellation_params = { cancellation: true }
+        cancellation_params = { endorsement_type: :cancellation }
         creator = described_class.new(policy, cancellation_params)
         cancellation = creator.call
 
@@ -46,7 +48,7 @@ RSpec.describe EndorsementCreator, type: :service do
     context "when params do not allow determining endorsement type" do
       it "raises ActiveRecord::RecordInvalid" do
         creator = described_class.new(policy, {})
-        expect { creator.call }.to raise_error(ActiveRecord::RecordInvalid)
+        expect { creator.call }.to raise_error(ActiveRecord::RecordInvalid, /Cannot determine endorsement type/)
       end
     end
   end

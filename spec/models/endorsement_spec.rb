@@ -1,52 +1,40 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Endorsement, type: :model do
   let(:policy) { create(:policy, lmg: 100_000.00, status: "active") }
   let(:endorsement) { create(:endorsement, policy: policy) }
 
-  shared_examples "immutable endorsement" do |action, exception_class, update_attributes = nil|
-    it "raises error when trying to #{action}" do
-      if update_attributes
-        expect {
-          endorsement.public_send("#{action}!", update_attributes)
-        }.to raise_error(exception_class, /Endorsements cannot be edited or deleted/)
-      else
-        expect {
-          endorsement.public_send("#{action}!")
-        }.to raise_error(exception_class, /Endorsements cannot be edited or deleted/)
-      end
+  describe "validations" do
+    it "is valid with required attributes" do
+      expect(endorsement).to be_valid
+    end
+
+    it "is invalid without issue_date" do
+      endorsement.issue_date = nil
+      expect(endorsement).not_to be_valid
+      expect(endorsement.errors[:issue_date]).to include("can't be blank")
+    end
+
+    it "is invalid without endorsement_type" do
+      endorsement.endorsement_type = nil
+      expect(endorsement).not_to be_valid
+      expect(endorsement.errors[:endorsement_type]).to include("can't be blank")
     end
   end
 
   describe "immutability" do
-    include_examples "immutable endorsement", "update", ActiveRecord::RecordNotSaved, { new_sum_insured: 200_000 }
-
-    include_examples "immutable endorsement", "destroy", ActiveRecord::RecordNotDestroyed
-  end
-
-  describe "automatic type detection" do
-    it "assigns 'increase_sum_insured' when new sum is higher" do
-      endorsement = create(:endorsement, policy: policy, new_sum_insured: 120_000, endorsement_type: nil)
-      expect(endorsement.endorsement_type).to eq("increase_sum_insured")
+    it "raises error when trying to update" do
+      expect {
+        endorsement.update!(new_sum_insured: 200_000)
+      }.to raise_error(ActiveRecord::RecordNotSaved, /Endorsements cannot be edited or deleted/)
     end
 
-    it "assigns 'decrease_sum_insured' when new sum is lower" do
-      endorsement = create(:endorsement, policy: policy, new_sum_insured: 80_000, endorsement_type: nil)
-      expect(endorsement.endorsement_type).to eq("decrease_sum_insured")
-    end
-  end
-
-  describe "#apply_to_policy" do
-    it "updates the policy LMG when sum insured increases" do
-      endorsement = create(:endorsement, policy: policy, new_sum_insured: 150_000)
-      endorsement.apply_to_policy
-      expect(policy.reload.lmg).to be_within(0.01).of(150_000.00)
-    end
-
-    it "sets policy to 'closed' when cancellation endorsement is applied" do
-      endorsement = create(:endorsement, :cancellation, policy: policy)
-      endorsement.apply_to_policy
-      expect(policy.reload.status).to eq("closed")
+    it "raises error when trying to destroy" do
+      expect {
+        endorsement.destroy!
+      }.to raise_error(ActiveRecord::RecordNotDestroyed, /Endorsements cannot be edited or deleted/)
     end
   end
 end
