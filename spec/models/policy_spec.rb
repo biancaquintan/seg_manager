@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Policy, type: :model do
@@ -18,13 +20,13 @@ RSpec.describe Policy, type: :model do
     it { should validate_numericality_of(:lmg).is_greater_than_or_equal_to(0) }
 
     it "is invalid if end_date is before start_date" do
-      policy = build(:policy, start_date: Date.today, end_date: Date.yesterday)
+      policy = build(:policy, start_date: Date.new(2025, 10, 26), end_date: Date.new(2025, 10, 20))
       expect(policy).to be_invalid
       expect(policy.errors[:end_date]).to include("must be after the start date")
     end
 
     it "is invalid if start_date is more than 30 days after issue_date" do
-      policy = build(:policy, issue_date: Date.today, start_date: 40.days.from_now)
+      policy = build(:policy, issue_date: Date.new(2025, 10, 25), start_date: Date.new(2025, 12, 1))
       expect(policy).to be_invalid
       expect(policy.errors[:start_date]).to include("cannot be more than 30 days after the issue date")
     end
@@ -42,8 +44,8 @@ RSpec.describe Policy, type: :model do
   describe "#apply_term!" do
     it "updates start and end date" do
       policy = create(:policy)
-      new_start = policy.issue_date + 10.days
-      new_end = new_start + 1.year
+      new_start = Date.new(2025, 11, 1)
+      new_end = Date.new(2026, 11, 1)
       policy.apply_term!(new_start, new_end)
       expect(policy.start_date).to eq(new_start)
       expect(policy.end_date).to eq(new_end)
