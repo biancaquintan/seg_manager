@@ -26,11 +26,11 @@ module Api
 
       # POST /api/v1/policies/:policy_id/endorsements
       def create
-        endorsement = EndorsementCreator.new(@policy, endorsement_params.to_h).call
+        endorsement = EndorsementCreator.new(@policy).call(endorsement_params.to_h)
         render json: endorsement, serializer: EndorsementSerializer, status: :created
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
-      rescue StandardError => e
+      rescue ArgumentError, StandardError => e
         render json: { error: e.message }, status: :unprocessable_entity
       end
 

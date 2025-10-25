@@ -1,110 +1,72 @@
+# frozen_string_literal: true
+
 class EndorsementCreator
-  def initialize(policy, params)
+  def initialize(policy)
     @policy = policy
-    @params = params.dup.symbolize_keys
   end
 
-  def call
-    ActiveRecord::Base.transaction do
-      prepare_params!
-      endorsement = create_endorsement!
-      apply_changes!(endorsement)
+  def call(params)
+    Endorsement.transaction do
+      endorsement = @policy.endorsements.create!(
+        issue_date: params[:issue_date],
+        endorsement_type: params[:endorsement_type],
+        new_sum_insured: params[:new_sum_insured],
+        new_start_date: params[:new_start_date],
+        new_end_date: params[:new_end_date],
+        canceled_endorsement_id: params[:canceled_endorsement_id]
+      )
+
+      apply_effects!(endorsement, params)
       endorsement
     end
+  rescue ActiveRecord::RecordInvalid => e
+    raise e
+  rescue StandardError => e
+    raise ActiveRecord::Rollback, e.message
   end
 
   private
 
-  def prepare_params!
-    @params[:issue_date] ||= Date.today
+  attr_reader :policy
 
-    return if @params[:endorsement_type].present?
+  def apply_effects!(endorsement, params)
+    case endorsement.endorsement_type.to_sym
+    when :increase_sum_insured, :decrease_sum_insured
+      update_sum_insured!(params[:new_sum_insured])
 
-    new_is = @params[:new_sum_insured]
-    new_start = @params[:new_start_date]
-    new_end = @params[:new_end_date]
+    when :change_term
+      update_term_dates!(params[:new_start_date], params[:new_end_date])
 
-    is_change = new_is.present? && new_is.to_d != @policy.sum_insured.to_d
-    term_change = new_start.present? || new_end.present?
+    when :increase_and_change_term, :decrease_and_change_term
+      update_sum_insured!(params[:new_sum_insured])
+      update_term_dates!(params[:new_start_date], params[:new_end_date])
 
-    if @params[:cancellation]
-      @params[:endorsement_type] = "cancellation"
-      @params.delete(:cancellation)
-      return
-    end
-
-    if is_change && term_change
-      @params[:endorsement_type] = new_is.to_d > @policy.sum_insured.to_d ? "increase_and_change_term" : "decrease_and_change_term"
-    elsif is_change
-      @params[:endorsement_type] = new_is.to_d > @policy.sum_insured.to_d ? "increase_sum_insured" : "decrease_sum_insured"
-    elsif term_change
-      @params[:endorsement_type] = "change_term"
+    when :cancellation
+      cancel_policy!
     else
-      raise ActiveRecord::RecordInvalid.new(build_temp_endorsement_with_errors("Cannot determine endorsement type"))
+      raise ArgumentError, "Tipo de endosso inválido"
     end
   end
 
-  def build_temp_endorsement_with_errors(msg)
-    e = @policy.endorsements.build(@params)
-    e.errors.add(:base, msg)
-    e
-  end
-
-  def create_endorsement!
-    @policy.endorsements.create!(@params)
-  end
-
-  def apply_changes!(endorsement)
-    case endorsement.endorsement_type.to_s
-    when "increase_sum_insured", "decrease_sum_insured"
-      @policy.apply_sum_insured!(endorsement.new_sum_insured)
-    when "change_term"
-      @policy.apply_term!(endorsement.new_start_date, endorsement.new_end_date)
-    when "increase_and_change_term", "decrease_and_change_term"
-      @policy.apply_sum_insured!(endorsement.new_sum_insured)
-      @policy.apply_term!(endorsement.new_start_date, endorsement.new_end_date)
-    when "cancellation"
-      apply_cancellation!(endorsement)
-    else
-      raise ArgumentError, "Unsupported endorsement type: #{endorsement.endorsement_type}"
-    end
-  end
-
-  def apply_cancellation!(endorsement)
-    previous = @policy.endorsements
-                      .where.not(endorsement_type: :cancellation)
-                      .where(canceled_endorsement_id: nil)
-                      .order(:created_at).last
-
-    unless previous
-      endorsement.errors.add(:base, "No previous endorsement to cancel")
-      raise ActiveRecord::RecordInvalid.new(endorsement)
+  def update_sum_insured!(new_sum_insured)
+    if new_sum_insured.blank? || new_sum_insured.to_f <= 0
+      policy.errors.add(:sum_insured, "Novo valor de soma segurada é obrigatório")
+      raise ActiveRecord::RecordInvalid.new(policy)
     end
 
-    endorsement.update_column(:canceled_endorsement_id, previous.id)
-
-    new_lmg = @policy.endorsements
-                     .where.not(endorsement_type: :cancellation)
-                     .where(canceled_endorsement_id: nil)
-                     .order(:created_at)
-                     .pluck(:new_sum_insured)
-                     .compact
-                     .last || @policy.sum_insured
-
-    if new_lmg.nil? || new_lmg < 0
-      @policy.mark_as_baixada!
-    else
-      @policy.apply_sum_insured!(new_lmg)
-    end
+    policy.apply_sum_insured!(new_sum_insured)
   end
 
-  def compute_sum_insured_excluding(excluded)
-    current = @policy.sum_insured
-    @policy.endorsements.order(:created_at).each do |e|
-      next if e == excluded
-      next if e.cancellation?
-      current = e.new_sum_insured if e.new_sum_insured.present?
+  def update_term_dates!(new_start_date, new_end_date)
+    if new_start_date.blank? || new_end_date.blank?
+      policy.errors.add(:base, "Datas de vigência são obrigatórias")
+      raise ActiveRecord::RecordInvalid.new(policy)
     end
-    current
+
+    policy.apply_term!(new_start_date, new_end_date)
+  end
+
+  def cancel_policy!
+    policy.mark_as_closed!
   end
 end
