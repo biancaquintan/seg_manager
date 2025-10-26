@@ -6,6 +6,8 @@ class EndorsementCreator
   end
 
   def call(params)
+    raise ActiveRecord::RecordInvalid.new(@policy), "Cannot create endorsement for a closed policy" if @policy.closed?
+
     Endorsement.transaction do
       endorsement = @policy.endorsements.create!(
         issue_date: params[:issue_date],
