@@ -44,6 +44,7 @@ Acesse `http://localhost:3000` para usar a API.
 ---
 
 ## 📚 Endpoints principais
+
 As requisições possuem paginação disponível via parâmetros `page` e `per_page`.
 
 ### Criar apólice
@@ -72,7 +73,7 @@ As requisições possuem paginação disponível via parâmetros `page` e `per_p
 - **Método:** `GET`
 - **Rota:** `/api/v1/policies/:policy_id/endorsements`
 - **Paginação:** `/api/v1/policies/:policy_id/endorsements?page=1&per_page=10`
-`
+  `
 
 ### Detalhes de um endosso
 
@@ -91,3 +92,6 @@ Este projeto utiliza **RSpec** para testes automatizados.
 bundle exec rspec
 ```
 
+### Testes manuais via Postman
+
+Há uma collection do **Postman** disponível na pasta raiz do projeto (`SegManager.postman_collection.json`) para facilitar a execução e validação manual dos endpoints.

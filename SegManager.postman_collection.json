@@ -1,0 +1,312 @@
+{
+	"info": {
+		"_postman_id": "2407b1d4-5bb0-4c3d-b1f7-677e0bb514d7",
+		"name": "SegManager collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@segmanager.com\",\n  \"password\": \"123456\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_base}}/api/v1/login",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Policies",
+			"item": [
+				{
+					"name": "List policies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "2",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show policy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies/{{policy_id}}",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies",
+								"{{policy_id}}"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create policy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"policy\": {\n    \"number\": \"POL444\",\n    \"issue_date\": \"2025-05-05\",\n    \"start_date\": \"2025-05-15\",\n    \"end_date\": \"2026-05-30\",\n    \"sum_insured\": 910000,\n    \"lmg\": 5000,\n    \"status\": \"active\"\n  }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Endorsements",
+			"item": [
+				{
+					"name": "Create endorsement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"endorsement\": {\n    \"issue_date\": \"2025-10-25\",\n    \"new_sum_insured\": 50000,\n    \"endorsement_type\": \"increase_sum_insured\"\n  }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies/{{policy_id}}/endorsements",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies",
+								"{{policy_id}}",
+								"endorsements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List policy endorsements",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies/{{policy_id}}/endorsements",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies",
+								"{{policy_id}}",
+								"endorsements"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "5",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show specific policy endorsement",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.4EFTswFf9Q8llgBzraiJH8ZMipzPvdsYnv8C526BHEI",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{url_base}}/api/v1/policies/{{policy_id}}/endorsements/{{endorsement_id}}",
+							"host": [
+								"{{url_base}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"policies",
+								"{{policy_id}}",
+								"endorsements",
+								"{{endorsement_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url_base",
+			"value": "http://localhost:3000",
+			"type": "default"
+		},
+		{
+			"key": "policy_id",
+			"value": "1",
+			"type": "default"
+		},
+		{
+			"key": "endorsement_id",
+			"value": "2",
+			"type": "default"
+		}
+	]
+}
