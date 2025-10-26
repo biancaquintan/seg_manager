@@ -23,6 +23,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: seg_manager_development
       BUNDLE_WITHOUT: "production"
+      TZ: America/Sao_Paulo
     command: >
       bash -c "
         until pg_isready -h db -U postgres; do
