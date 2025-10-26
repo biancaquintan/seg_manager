@@ -4,8 +4,8 @@ require 'rails_helper'
 
 RSpec.describe "Api::V1::Endorsements", type: :request do
   let(:user) { create(:user) }
-  let(:policy) { create(:policy, sum_insured: 100_000.0, lmg: 100_000.0, start_date: Date.today, end_date: Date.today + 1.year) }
-  let(:today) { Date.today }
+  let(:policy) { create(:policy, sum_insured: 100_000.0, lmg: 100_000.0, start_date:  Date.current , end_date:  Date.current  + 1.year) }
+  let(:today) {  Date.current  }
 
   describe "POST /api/v1/policies/:policy_id/endorsements" do
     context "increase sum insured" do

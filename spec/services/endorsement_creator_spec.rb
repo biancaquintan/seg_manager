@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe EndorsementCreator, type: :service do
-  let(:policy) { create(:policy, sum_insured: 100_000.to_d, lmg: 100_000.to_d, issue_date: Date.today, start_date: Date.today + 1.day, end_date: Date.today + 30.days) }
+  let(:policy) { create(:policy, sum_insured: 100_000.to_d, lmg: 100_000.to_d, issue_date:  Date.current , start_date:  Date.current  + 1.day, end_date:  Date.current  + 30.days) }
   let(:service) { described_class.new(policy) }
   let(:issue_date) { policy.issue_date }
 
