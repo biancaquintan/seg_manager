@@ -100,15 +100,35 @@ RSpec.describe "Api::V1::Endorsements", type: :request do
     end
 
     context "cancellation" do
+      let!(:last_endorsement) do
+        create(:endorsement, policy: policy, endorsement_type: :increase_sum_insured, issue_date: today - 1.day)
+      end
       let(:params) { { endorsement: { issue_date: today, cancellation: true } } }
 
-      it "creates a cancellation endorsement and closes the policy" do
+      it "creates a cancellation endorsement referencing the last valid endorsement and closes the policy" do
         expect {
           post api_v1_policy_endorsements_path(policy), params: params.to_json, headers: auth_headers(user)
         }.to change(Endorsement, :count).by(1)
 
         expect(response).to have_http_status(:created)
+
+        last = Endorsement.last
+        expect(last.endorsement_type).to eq("cancellation")
+        expect(last.canceled_endorsement).to eq(last_endorsement)
         expect(policy.reload.status).to eq("closed")
+      end
+    end
+
+    context "cancellation with no valid endorsement" do
+      let(:params) { { endorsement: { issue_date: today, cancellation: true } } }
+
+      it "raises validation error when there is no valid endorsement to cancel" do
+        expect {
+          post api_v1_policy_endorsements_path(policy), params: params.to_json, headers: auth_headers(user)
+        }.not_to change(Endorsement, :count)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(json_response[:errors].first).to match(/No valid endorsement to cancel/)
       end
     end
 

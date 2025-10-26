@@ -95,47 +95,40 @@ RSpec.describe EndorsementCreator, type: :service do
       end
     end
 
-    context 'when cancelling a policy' do
-      it 'creates a cancellation endorsement and closes the policy' do
-        params = { issue_date: issue_date }
-
-        endorsement = service.call(params.merge(cancellation: true))
-
-        expect(endorsement).to be_persisted
-        expect(endorsement.endorsement_type).to eq('cancellation')
-        expect(policy.reload.status).to eq('closed')
-      end
-    end
-
-    context 'with invalid parameters' do
-      it 'raises validation error for missing sum insured' do
-        params = { issue_date: issue_date, new_sum_insured: nil }
-
-        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
+    context 'when cancelling a policy with a prior valid endorsement' do
+      let!(:last_endorsement) do
+        service.call(issue_date: issue_date, new_sum_insured: 120_000.to_d)
       end
 
-      it 'raises validation error for invalid term dates' do
-        params = { issue_date: issue_date, new_start_date: policy.issue_date + 10.days, new_end_date: policy.issue_date + 5.days }
-
-        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
-      end
-    end
-
-    context 'when cancelling a policy' do
-      it 'creates a cancellation endorsement and closes the policy' do
+      it 'creates a cancellation endorsement referencing the last valid endorsement and closes the policy' do
         params = { cancellation: true, issue_date: issue_date }
 
         endorsement = service.call(params)
 
         expect(endorsement).to be_persisted
         expect(endorsement.endorsement_type).to eq('cancellation')
+        expect(endorsement.canceled_endorsement).to eq(last_endorsement)
         expect(policy.reload.status).to eq('closed')
+      end
+    end
+
+    context 'when there is no valid endorsement to cancel' do
+      it 'raises a RecordInvalid error' do
+        params = { cancellation: true, issue_date: issue_date }
+
+        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid, /No valid endorsement to cancel/)
       end
     end
 
     context 'with invalid parameters' do
       it 'raises validation error for missing sum insured' do
         params = { issue_date: issue_date }
+
+        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+
+      it 'raises validation error for invalid term dates' do
+        params = { issue_date: issue_date, new_start_date: policy.issue_date + 10.days, new_end_date: policy.issue_date + 5.days }
 
         expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
       end

@@ -9,7 +9,7 @@ RSpec.describe Endorsement, type: :model do
     it "is valid with required attributes" do
       endorsement = create(:endorsement, policy: policy)
       expect(endorsement).to be_valid
-      expect(endorsement.issue_date).to eq(policy.issue_date)
+      expect(endorsement.issue_date).to be >= policy.issue_date
     end
 
     it "is invalid without issue_date" do

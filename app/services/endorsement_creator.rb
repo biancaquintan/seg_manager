@@ -25,10 +25,19 @@ class EndorsementCreator
   private
 
   def create_cancellation_endorsement(issue_date)
+    last_valid_endorsement = @policy.endorsements
+                                    .where.not(endorsement_type: :cancellation)
+                                    .where(canceled_endorsement_id: nil)
+                                    .order(created_at: :desc)
+                                    .first
+
+    raise ActiveRecord::RecordInvalid.new(Endorsement.new), "No valid endorsement to cancel" unless last_valid_endorsement
+
     Endorsement.create!(
       policy: @policy,
       issue_date: issue_date,
-      endorsement_type: :cancellation
+      endorsement_type: :cancellation,
+      canceled_endorsement: last_valid_endorsement
     )
   end
 

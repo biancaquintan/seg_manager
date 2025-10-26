@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :endorsement do
     association :policy
-    issue_date { Time.current }
+    issue_date { Date.current }
 
     endorsement_type { :increase_sum_insured }
     new_sum_insured { 120_000.0 }
