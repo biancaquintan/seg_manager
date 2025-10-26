@@ -106,10 +106,15 @@ As requisições possuem paginação disponível via parâmetros `page` e `per_p
 
 Este projeto utiliza **RSpec** para testes automatizados.
 
-### Rodar Testes
+### Rodar Testes 
 
 ```bash
 bundle exec rspec
+```
+### Rodar Testes via Docker
+
+```bash
+docker compose exec web bash -c "RAILS_ENV=test bundle exec rspec"
 ```
 
 ### Testes manuais via Postman
