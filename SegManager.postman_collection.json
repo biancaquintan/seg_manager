@@ -179,7 +179,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"endorsement\": {\n    \"issue_date\": \"2025-10-25\",\n    \"new_sum_insured\": 50000,\n    \"endorsement_type\": \"increase_sum_insured\"\n  }\n}\n",
+							"raw": "{\n  \"endorsement\": {\n    \"issue_date\": \"2025-10-25\",\n    \"new_sum_insured\": 30000\n  }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
