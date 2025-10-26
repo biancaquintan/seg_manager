@@ -22,6 +22,17 @@ RSpec.describe "Api::V1::Policies", type: :request do
         expect(response).to have_http_status(:ok)
         expect(json_response[:id]).to eq(policy.id)
       end
+
+      it "returns recalculated lmg when endorsements exist" do
+        endorsement = create(:endorsement, :increase_sum_insured, policy: policy, new_sum_insured: 120_000)
+        policy.update_column(:lmg, 80_000)
+
+        get api_v1_policy_path(policy), headers: auth_headers(user)
+        expect(response).to have_http_status(:ok)
+
+        json = json_response
+        expect(json[:lmg].to_f).to eq(endorsement.new_sum_insured.to_f)
+      end
     end
 
     context "when policy does not exist" do

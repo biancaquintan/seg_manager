@@ -59,4 +59,25 @@ RSpec.describe Policy, type: :model do
       expect(policy.status).to eq("closed")
     end
   end
+
+  describe "after_find :recalculate_lmg!" do
+    it "updates lmg based on last valid endorsement when record is loaded" do
+      policy = create(:policy, sum_insured: 100_000, lmg: 100_000)
+      create(:endorsement, :increase_sum_insured, policy: policy, new_sum_insured: 120_000)
+
+      policy.update_column(:lmg, 80_000)
+
+      reloaded = Policy.find(policy.id)
+
+      expect(reloaded.lmg).to eq(120_000)
+    end
+
+    it "does not perform unnecessary updates when LMG is already correct" do
+      policy = create(:policy, sum_insured: 100_000, lmg: 100_000)
+      create(:endorsement, :increase_sum_insured, policy: policy, new_sum_insured: 100_000)
+
+      expect(policy).not_to receive(:update_column)
+      Policy.find(policy.id)
+    end
+  end
 end

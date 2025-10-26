@@ -9,6 +9,8 @@ class Policy < ApplicationRecord
   validate :valid_term_dates
   validate :start_date_within_issue_period
 
+  after_find :recalculate_lmg!
+
   def apply_sum_insured!(new_sum_insured)
     if new_sum_insured.nil? || new_sum_insured.negative?
       errors.add(:sum_insured, "must be a positive number")
@@ -42,7 +44,7 @@ class Policy < ApplicationRecord
   def recalculate_lmg!
     last_valid = last_valid_endorsement
     new_value = last_valid&.new_sum_insured || sum_insured
-    update!(lmg: new_value)
+    update_column(:lmg, new_value) if lmg != new_value
   end
 
   private
