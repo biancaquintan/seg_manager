@@ -38,8 +38,6 @@ rails db:migrate
 # Popule o banco de dados com o usuário padrão para geração de token JWT
 rails db:seed
 
-Credenciais de usuário padrão -> email: user@segmanager.com  |  password: 123456
-
 # Rode o servidor
 rails server
 
@@ -48,6 +46,10 @@ rails server
 Caso opte por usar DOCKER:
 
 ```bash
+# Clone o repositório
+git clone https://github.com/biancaquintan/seg_manager.git
+cd seg_manager
+
 # Suba os containers em background
 docker compose up --build -d
 
@@ -56,6 +58,8 @@ docker compose run web bin/rails db:create db:migrate db:seed
 ```
 
 Acesse `http://localhost:3000` para usar a API.
+
+Credenciais de usuário padrão -> email: user@segmanager.com  |  password: 123456
 
 ---
 
