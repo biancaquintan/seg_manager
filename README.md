@@ -42,6 +42,17 @@ Credenciais de usuário padrão -> email: user@segmanager.com  |  password: 1234
 
 # Rode o servidor
 rails server
+
+```
+
+Caso opte por usar DOCKER:
+
+```bash
+# Suba os containers em background
+docker compose up --build -d
+
+# Crie o banco, rode migrations e seeds
+docker compose run web bin/rails db:create db:migrate db:seed
 ```
 
 Acesse `http://localhost:3000` para usar a API.

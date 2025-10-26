@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: seg_manager_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      RAILS_ENV: development
+      POSTGRES_HOST: db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: seg_manager_development
+      BUNDLE_WITHOUT: "production"
+    command: >
+      bash -c "
+        until pg_isready -h db -U postgres; do
+          echo 'Waiting for Postgres...'
+          sleep 2
+        done
+        rm -f tmp/pids/server.pid &&
+        bin/rails server -b 0.0.0.0 -p 3000
+      "
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  bundle_cache:
