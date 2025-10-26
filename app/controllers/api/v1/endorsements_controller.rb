@@ -52,7 +52,6 @@ module Api
       def endorsement_params
         params.require(:endorsement).permit(
           :issue_date,
-          :endorsement_type,
           :new_sum_insured,
           :new_start_date,
           :new_end_date,

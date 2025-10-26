@@ -3,14 +3,23 @@
 require "rails_helper"
 
 RSpec.describe EndorsementCreator, type: :service do
-  let(:policy) { create(:policy, sum_insured: 100_000.to_d, lmg: 100_000.to_d, issue_date:  Date.current , start_date:  Date.current  + 1.day, end_date:  Date.current  + 30.days) }
+  let(:policy) do
+    create(
+      :policy,
+      sum_insured: 100_000.to_d,
+      lmg: 100_000.to_d,
+      issue_date: Date.current,
+      start_date: Date.current + 1.day,
+      end_date: Date.current + 30.days
+    )
+  end
   let(:service) { described_class.new(policy) }
   let(:issue_date) { policy.issue_date }
 
   describe '#call' do
     context 'when increasing sum insured' do
       it 'creates an endorsement and updates the policy sum_insured and lmg' do
-        params = { endorsement_type: :increase_sum_insured, issue_date: issue_date, new_sum_insured: 120_000.to_d }
+        params = { issue_date: issue_date, new_sum_insured: 120_000.to_d }
 
         endorsement = service.call(params)
 
@@ -23,7 +32,7 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'when decreasing sum insured' do
       it 'creates an endorsement and updates the policy sum_insured and lmg' do
-        params = { endorsement_type: :decrease_sum_insured, issue_date: issue_date, new_sum_insured: 80_000.to_d }
+        params = { issue_date: issue_date, new_sum_insured: 80_000.to_d }
 
         endorsement = service.call(params)
 
@@ -36,10 +45,10 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'when changing term' do
       it 'creates an endorsement and updates the policy term dates' do
-        new_start = policy.issue_date + 10.days
+        new_start = policy.start_date + 10.days
         new_end   = policy.end_date + 10.days
 
-        params = { endorsement_type: :change_term, issue_date: issue_date, new_start_date: new_start, new_end_date: new_end }
+        params = { issue_date: issue_date, new_start_date: new_start, new_end_date: new_end }
 
         endorsement = service.call(params)
 
@@ -52,16 +61,10 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'when increasing sum insured and changing term' do
       it 'updates both sum_insured/lmg and term dates' do
-        new_start = policy.issue_date + 5.days
+        new_start = policy.start_date + 5.days
         new_end   = policy.end_date + 5.days
 
-        params = {
-          endorsement_type: :increase_and_change_term,
-          issue_date: issue_date,
-          new_sum_insured: 150_000.to_d,
-          new_start_date: new_start,
-          new_end_date: new_end
-        }
+        params = { issue_date: issue_date, new_sum_insured: 150_000.to_d, new_start_date: new_start, new_end_date: new_end }
 
         endorsement = service.call(params)
 
@@ -76,16 +79,10 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'when decreasing sum insured and changing term' do
       it 'updates both sum_insured/lmg and term dates' do
-        new_start = policy.issue_date + 5.days
+        new_start = policy.start_date + 5.days
         new_end   = policy.end_date + 5.days
 
-        params = {
-          endorsement_type: :decrease_and_change_term,
-          issue_date: issue_date,
-          new_sum_insured: 90_000.to_d,
-          new_start_date: new_start,
-          new_end_date: new_end
-        }
+        params = { issue_date: issue_date, new_sum_insured: 90_000.to_d, new_start_date: new_start, new_end_date: new_end }
 
         endorsement = service.call(params)
 
@@ -100,7 +97,33 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'when cancelling a policy' do
       it 'creates a cancellation endorsement and closes the policy' do
-        params = { endorsement_type: :cancellation, issue_date: issue_date }
+        params = { issue_date: issue_date }
+
+        endorsement = service.call(params.merge(cancellation: true))
+
+        expect(endorsement).to be_persisted
+        expect(endorsement.endorsement_type).to eq('cancellation')
+        expect(policy.reload.status).to eq('closed')
+      end
+    end
+
+    context 'with invalid parameters' do
+      it 'raises validation error for missing sum insured' do
+        params = { issue_date: issue_date, new_sum_insured: nil }
+
+        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+
+      it 'raises validation error for invalid term dates' do
+        params = { issue_date: issue_date, new_start_date: policy.issue_date + 10.days, new_end_date: policy.issue_date + 5.days }
+
+        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    context 'when cancelling a policy' do
+      it 'creates a cancellation endorsement and closes the policy' do
+        params = { cancellation: true, issue_date: issue_date }
 
         endorsement = service.call(params)
 
@@ -112,18 +135,7 @@ RSpec.describe EndorsementCreator, type: :service do
 
     context 'with invalid parameters' do
       it 'raises validation error for missing sum insured' do
-        params = { endorsement_type: :increase_sum_insured, issue_date: issue_date }
-
-        expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
-      end
-
-      it 'raises validation error for invalid term dates' do
-        params = {
-          endorsement_type: :change_term,
-          issue_date: issue_date,
-          new_start_date: policy.issue_date + 10.days,
-          new_end_date: policy.issue_date + 5.days
-        }
+        params = { issue_date: issue_date }
 
         expect { service.call(params) }.to raise_error(ActiveRecord::RecordInvalid)
       end
