@@ -1,24 +1,93 @@
-# README
+# seg_manager
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+API desenvolvida em **Ruby on Rails (API-only)** com **PostgreSQL** focada em gerenciar apólices de seguro e seus endossos.
 
-Things you may want to cover:
+---
 
-* Ruby version
+## 🚀 Tecnologias utilizadas
 
-* System dependencies
+- Ruby 3.2.2
+- Rails 7.1.3 (API-only)
+- PostgreSQL
+- JWT (autenticação)
+- Kaminari (paginação)
+- RSpec, FactoryBot, Faker, Shoulda Matchers (testes)
+- Dotenv (variáveis de ambiente)
+- RuboCop & Brakeman (análise de código e segurança)
 
-* Configuration
+---
 
-* Database creation
+## ⚙️ Como rodar o projeto
 
-* Database initialization
+```bash
+# Clone o repositório
+git clone https://github.com/biancaquintan/seg_manager.git
+cd seg_manager
 
-* How to run the test suite
+# Instale as dependências
+bundle install
 
-* Services (job queues, cache servers, search engines, etc.)
+# Configure as variáveis de ambiente
+Faça uma cópia do arquivo ´.env.example´ (encontrado na pasta raiz do projeto) e renomeie para `.env`, preenchendo os valores das variáveis com os dados correspondentes.
+Mantenha o novo arquivo (`.env`) na pasta raiz do projeto.
 
-* Deployment instructions
+# Configure o banco de dados
+rails db:create
+rails db:migrate
 
-* ...
+# Rode o servidor
+rails server
+```
+
+Acesse `http://localhost:3000` para usar a API.
+
+---
+
+## 📚 Endpoints principais
+As requisições possuem paginação disponível via parâmetros `page` e `per_page`.
+
+### Criar apólice
+
+- **Método:** `POST`
+- **Rota:** `/api/v1/policies`
+
+### Listar apólices
+
+- **Método:** `GET`
+- **Rota:** `/api/v1/policies`
+- **Paginação:** `/api/v1/policies?page=1&per_page=10`
+
+### Detalhes de uma apólice
+
+- **Método:** `GET`
+- **Rota:** `/api/v1/policies/:id`
+
+### Criar endosso
+
+- **Método:** `POST`
+- **Rota:** `/api/v1/policies/:policy_id/endorsements`
+
+### Listar endossos
+
+- **Método:** `GET`
+- **Rota:** `/api/v1/policies/:policy_id/endorsements`
+- **Paginação:** `/api/v1/policies/:policy_id/endorsements?page=1&per_page=10`
+`
+
+### Detalhes de um endosso
+
+- **Método:** `GET`
+- **Rota:** `/api/v1/policies/:policy_id/endorsements/:id`
+
+---
+
+## 🧪 Testes
+
+Este projeto utiliza **RSpec** para testes automatizados.
+
+### Rodar Testes
+
+```bash
+bundle exec rspec
+```
+
