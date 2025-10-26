@@ -35,6 +35,11 @@ Mantenha o novo arquivo (`.env`) na pasta raiz do projeto.
 rails db:create
 rails db:migrate
 
+# Popule o banco de dados com o usuário padrão para geração de token JWT
+rails db:seed
+
+Credenciais de usuário padrão -> email: user@segmanager.com  |  password: 123456
+
 # Rode o servidor
 rails server
 ```
